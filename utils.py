@@ -3,7 +3,8 @@ import openai
 import streamlit as st
 from datetime import datetime
 from langchain_openai import ChatOpenAI
-from langchain_community.chat_models import ChatOllama
+from langchain_google_vertexai import ChatVertexAI
+
 
 #decorator
 def enable_chat_history(func):
@@ -29,7 +30,9 @@ def enable_chat_history(func):
 
     def execute(*args, **kwargs):
         func(*args, **kwargs)
+
     return execute
+
 
 def display_msg(msg, author):
     """Method to display message on the UI
@@ -41,55 +44,26 @@ def display_msg(msg, author):
     st.session_state.messages.append({"role": author, "content": msg})
     st.chat_message(author).write(msg)
 
-def choose_custom_openai_key():
-    openai_api_key = st.sidebar.text_input(
-        label="OpenAI API Key",
-        type="password",
-        placeholder="sk-...",
-        key="SELECTED_OPENAI_API_KEY"
-        )
-    if not openai_api_key:
-        st.error("Please add your OpenAI API key to continue.")
-        st.info("Obtain your key from this link: https://platform.openai.com/account/api-keys")
-        st.stop()
-
-    model = "gpt-4o-mini"
-    try:
-        client = openai.OpenAI(api_key=openai_api_key)
-        available_models = [{"id": i.id, "created":datetime.fromtimestamp(i.created)} for i in client.models.list() if str(i.id).startswith("gpt")]
-        available_models = sorted(available_models, key=lambda x: x["created"])
-        available_models = [i["id"] for i in available_models]
-
-        model = st.sidebar.selectbox(
-            label="Model",
-            options=available_models,
-            key="SELECTED_OPENAI_MODEL"
-        )
-    except openai.AuthenticationError as e:
-        st.error(e.body["message"])
-        st.stop()
-    except Exception as e:
-        print(e)
-        st.error("Something went wrong. Please try again later.")
-        st.stop()
-    return model, openai_api_key
 
 def configure_llm():
-    available_llms = ["gpt-4o-mini","llama3.1:8b","use your openai api key"]
+    available_llms = {
+        "gpt-4o": "GPT-4o",
+        "gpt-4o-mini": "GPT-4o Mini",
+        "gemini-1.5-pro-001": "Gemini 1.5 Pro",
+        "gemini-1.5-flash-001": "Gemini 1.5 Flash",
+    }
     llm_opt = st.sidebar.radio(
-        label="LLM",
-        options=available_llms,
+        label="Models",
+        options=available_llms.values(),
         key="SELECTED_LLM"
-        )
-
-    if llm_opt == "llama3.1:8b":
-        llm = ChatOllama(model="llama3.1", base_url=st.secrets["OLLAMA_ENDPOINT"])
-    elif llm_opt == "gpt-4o-mini":
-        llm = ChatOpenAI(model_name=llm_opt, temperature=0, streaming=True, api_key=st.secrets["OPENAI_API_KEY"])
+    )
+    selected_llm = next(key for key, value in available_llms.items() if value == llm_opt)
+    if selected_llm == "gpt-4o" or selected_llm == "gpt-4o-mini":
+        llm = ChatOpenAI(model_name=selected_llm, temperature=0, streaming=True)
     else:
-        model, openai_api_key = choose_custom_openai_key()
-        llm = ChatOpenAI(model_name=model, temperature=0, streaming=True, api_key=openai_api_key)
+        llm = ChatVertexAI(model_name=selected_llm, temperature=0, streaming=True)
     return llm
+
 
 def sync_st_session():
     for k, v in st.session_state.items():

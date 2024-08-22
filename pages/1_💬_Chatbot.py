@@ -1,22 +1,22 @@
+import os
+
 import utils
 import streamlit as st
 from streaming import StreamHandler
 
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
+import time
 
-st.set_page_config(page_title="Context aware chatbot", page_icon="⭐")
-st.header('Context aware chatbot')
-st.write('Enhancing Chatbot Interactions through Context Awareness')
-st.write('[![view source code ](https://img.shields.io/badge/view_source_code-gray?logo=github)](https://github.com/shashankdeshpande/langchain-chatbot/blob/master/pages/2_%E2%AD%90_context_aware_chatbot.py)')
+st.set_page_config(page_title="Chatbot", page_icon="💬")
+st.header('Chatbot')
 
 class ContextChatbot:
 
     def __init__(self):
         utils.sync_st_session()
         self.llm = utils.configure_llm()
-    
-    @st.cache_resource
+
     def setup_chain(_self):
         memory = ConversationBufferMemory()
         chain = ConversationChain(llm=_self.llm, memory=memory, verbose=True)
@@ -30,11 +30,16 @@ class ContextChatbot:
             utils.display_msg(user_query, 'user')
             with st.chat_message("assistant"):
                 st_cb = StreamHandler(st.empty())
+                # Start measuring time
+                start = time.time()
                 result = chain.invoke(
                     {"input":user_query},
                     {"callbacks": [st_cb]}
                 )
                 response = result["response"]
+                # Kết thúc đo thời gian
+                elapsed_time = time.time() - start
+                st.write(f"Execution time: {elapsed_time:.2f}s")
                 st.session_state.messages.append({"role": "assistant", "content": response})
 
 if __name__ == "__main__":

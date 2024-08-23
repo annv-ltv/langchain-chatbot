@@ -6,9 +6,9 @@ st.set_page_config(
     layout='wide'
 )
 
-st.header("Demo Chatbot sử dụng Langchain")
+st.header("Demo Chatbot using Langchain")
 st.write("""
-Langchain là một framework mạnh mẽ được thiết kế để hợp lý hóa việc phát triển các ứng dụng sử dụng Mô hình ngôn ngữ (LLM). Nó cung cấp sự tích hợp toàn diện của nhiều thành phần khác nhau, đơn giản hóa quá trình lắp ráp chúng để tạo ra các ứng dụng mạnh mẽ.
+Langchain is a powerful framework designed to streamline the development of Language Model (LLM) applications. It provides comprehensive integration of various components, simplifying the process of assembling them to create powerful applications.
 
-Tận dụng sức mạnh của Langchain, việc tạo ra chatbot trở nên dễ dàng.
+With the power of Langchain, creating a chatbot becomes easy.
 """)

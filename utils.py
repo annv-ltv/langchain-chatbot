@@ -1,7 +1,6 @@
 import os
-import openai
+import sys
 import streamlit as st
-from datetime import datetime
 from langchain_openai import ChatOpenAI
 from langchain_google_vertexai import ChatVertexAI
 
@@ -59,11 +58,17 @@ def configure_llm():
         key="SELECTED_LLM"
     )
     selected_llm = next(key for key, value in available_llms.items() if value == llm_opt)
-    if selected_llm in ["gpt-4o", "gpt-4o-mini"]:
-        llm = ChatOpenAI(model_name=selected_llm, temperature=0, streaming=True)
-    else:
-        llm = ChatVertexAI(model_name=selected_llm, temperature=0, streaming=True)
-    return llm
+
+    try:
+        if selected_llm in ["gpt-4o", "gpt-4o-mini"]:
+            llm = ChatOpenAI(model_name=selected_llm, temperature=0, streaming=True)
+        else:
+            llm = ChatVertexAI(model_name=selected_llm, temperature=0, streaming=True)
+        return llm
+    except Exception as e:
+        errorStr = e.errors()[0]["msg"]
+        st.write(f"An error occurred: {errorStr}")
+        sys.exit(1)
 
 def sync_st_session():
     for k, v in st.session_state.items():

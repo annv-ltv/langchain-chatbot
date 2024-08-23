@@ -66,8 +66,7 @@ def configure_llm():
             llm = ChatVertexAI(model_name=selected_llm, temperature=0, streaming=True)
         return llm
     except Exception as e:
-        errorStr = e.errors()[0]["msg"]
-        st.write(f"An error occurred: {errorStr}")
+        st.write(f"An error occurred: {str(e)}")
         sys.exit(1)
 
 def sync_st_session():

@@ -1,5 +1,3 @@
-import os
-
 import utils
 import streamlit as st
 from streaming import StreamHandler
@@ -19,9 +17,9 @@ class ContextChatbot:
 
     def setup_chain(_self):
         memory = ConversationBufferMemory()
-        chain = ConversationChain(llm=_self.llm, memory=memory, verbose=False)
+        chain = ConversationChain(llm=_self.llm, memory=memory, verbose=True)
         return chain
-    
+
     @utils.enable_chat_history
     def main(self):
         chain = self.setup_chain()
@@ -41,7 +39,6 @@ class ContextChatbot:
                 elapsed_time = time.time() - start
                 st.write(f"Execution time: {elapsed_time:.2f}s")
                 st.session_state.messages.append({"role": "assistant", "content": response})
-                utils.print_qa(ContextChatbot, user_query, response)
 
 if __name__ == "__main__":
     obj = ContextChatbot()

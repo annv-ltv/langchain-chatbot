@@ -20,4 +20,7 @@ $ docker build -t langchain-chatbot .
 
 # To run the docker container
 $ docker run -p 8501:8501 langchain-chatbot
+
+# Go
+http://localhost:8501/
 ```

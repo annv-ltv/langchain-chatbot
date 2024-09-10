@@ -3,3 +3,4 @@
 /__pycache__/
 /gsa_key.json
 /.streamlit/secrets.toml
+/tmp/

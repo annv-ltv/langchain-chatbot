@@ -7,8 +7,8 @@ from streaming import StreamHandler
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
 
-st.set_page_config(page_title="Chatbot", page_icon="💬")
-st.header('Chatbot')
+st.set_page_config(page_title="Normal Chatbot", page_icon="💬")
+st.header('Normal Chatbot')
 
 class ContextChatbot:
     """
@@ -24,9 +24,10 @@ class ContextChatbot:
         utils.sync_st_session()
         self.llm = utils.configure_llm()
 
-    def setup_chain(self):
+    @st.cache_resource
+    def setup_chain(_self):
         memory = ConversationBufferMemory()
-        chain = ConversationChain(llm=self.llm, memory=memory, verbose=True)
+        chain = ConversationChain(llm=_self.llm, memory=memory, verbose=True)
         return chain
 
     @utils.enable_chat_history
@@ -38,7 +39,7 @@ class ContextChatbot:
             with st.chat_message("assistant"):
                 st_cb = StreamHandler(st.empty())
                 # Start measuring time
-                start = time.time()
+                # start = time.time()
                 try:
                     result = chain.invoke(
                         {"input": user_query},
@@ -48,9 +49,9 @@ class ContextChatbot:
                 except Exception as e:
                     response = f"An error occurred: {str(e)}"
                 # End measuring time
-                elapsed_time = time.time() - start
-                st.write(f"Execution time: {elapsed_time:.2f}s")
+                # elapsed_time = time.time() - start
                 st.session_state.messages.append({"role": "assistant", "content": response})
+                # st.write(f"Execution time: {elapsed_time:.2f}s")
 
 if __name__ == "__main__":
     obj = ContextChatbot()

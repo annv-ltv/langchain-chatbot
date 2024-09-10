@@ -1,8 +1,12 @@
 import os
 import sys
 import streamlit as st
+from streamlit.logger import get_logger
 from langchain_openai import ChatOpenAI
 from langchain_google_vertexai import ChatVertexAI
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+
+logger = get_logger('Langchain-Chatbot')
 
 def enable_chat_history(func):
     """
@@ -52,12 +56,28 @@ def configure_llm():
         "gemini-1.5-pro-001": "Gemini 1.5 Pro",
         "gemini-1.5-flash-001": "Gemini 1.5 Flash",
     }
+
+    # Get the pre-selected model if available
+    if "previous_llm" not in st.session_state:
+        st.session_state["previous_llm"] = None
+
     llm_opt = st.sidebar.radio(
         label="Models",
         options=available_llms.values(),
         key="SELECTED_LLM"
     )
     selected_llm = next(key for key, value in available_llms.items() if value == llm_opt)
+
+    # If the model changes, delete the dialogue and cache resources
+    if st.session_state["previous_llm"] != selected_llm:
+        # Delete all conversations
+        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
+
+        # Clear cache of @st.cache_resource
+        st.cache_resource.clear()
+
+        # Update previous model
+        st.session_state["previous_llm"] = selected_llm
 
     try:
         if selected_llm in ["gpt-4o", "gpt-4o-mini"]:
@@ -68,6 +88,15 @@ def configure_llm():
     except Exception as e:
         st.write(f"An error occurred: {str(e)}")
         sys.exit(1)
+
+@st.cache_resource
+def configure_embedding_model():
+    embedding_model = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+    return embedding_model
+
+def print_qa(cls, question, answer):
+    log_str = "\nUsecase: {}\nQuestion: {}\nAnswer: {}\n" + "------"*10
+    logger.info(log_str.format(cls.__name__, question, answer))
 
 def sync_st_session():
     for k, v in st.session_state.items():
